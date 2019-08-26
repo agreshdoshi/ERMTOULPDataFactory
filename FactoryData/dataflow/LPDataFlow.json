@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "TOUSourceCSV",
+						"referenceName": "LPSourceCSV",
 						"type": "DatasetReference"
 					},
 					"name": "LPSource"
@@ -26,7 +26,7 @@
 					"name": "LPAggregate"
 				}
 			],
-			"script": "\n\nsource(output(\n\t\t{MeterPoint Code} as string,\n\t\t{Serial Number} as string,\n\t\t{Plant Code} as string,\n\t\t{Date/Time} as date 'dd/MM/yyyy',\n\t\t{Data Type} as string,\n\t\t{Data Value} as double '000,000,000.00',\n\t\tUnits as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['LP*.csv']) ~> LPSource\nLPSource aggregate(groupBy({Date/Time},\n\t\t{MeterPoint Code},\n\t\t{Data Type}),\n\tMedianValue = round(mean({Data Value}))\r\n,\n\t\tMaximumValue = round(max({Data Value})),\n\t\tMinimumValue = round(min({Data Value}))) ~> LPAggregate\nLPAggregate sink(input(\n\t\tId as integer,\n\t\tDate as date,\n\t\tMeterCode as string,\n\t\tDataType as string,\n\t\tAverageValue as double,\n\t\tMinimumValue as double,\n\t\tMaximumValue as double,\n\t\tMedianValue as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tMeterCode = {MeterPoint Code},\n\t\tDate = {Date/Time},\n\t\tDataType = {Data Type},\n\t\tMinimumValue,\n\t\tMaximumValue,\n\t\tMedianValue\n\t)) ~> LPSink"
+			"script": "\n\nsource(output(\n\t\t{MeterPoint Code} as string,\n\t\t{Serial Number} as string,\n\t\t{Plant Code} as string,\n\t\t{Date/Time} as string,\n\t\t{Data Type} as string,\n\t\t{Data Value} as string,\n\t\tUnits as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['LP*.csv']) ~> LPSource\nLPSource aggregate(groupBy({Date/Time},\n\t\t{MeterPoint Code},\n\t\t{Data Type}),\n\tMedianValue = round(mean({Data Value}))\r\n,\n\t\tMaximumValue = round(max({Data Value})),\n\t\tMinimumValue = round(min({Data Value}))) ~> LPAggregate\nLPAggregate sink(input(\n\t\tId as integer,\n\t\tDate as date,\n\t\tMeterCode as string,\n\t\tDataType as string,\n\t\tAverageValue as double,\n\t\tMinimumValue as double,\n\t\tMaximumValue as double,\n\t\tMedianValue as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tMeterCode = {MeterPoint Code},\n\t\tDate = {Date/Time},\n\t\tDataType = {Data Type},\n\t\tMinimumValue,\n\t\tMaximumValue,\n\t\tMedianValue\n\t)) ~> LPSink"
 		}
 	}
 }

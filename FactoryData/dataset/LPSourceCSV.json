@@ -1,5 +1,5 @@
 {
-	"name": "TOUSourceCSV",
+	"name": "LPSourceCSV",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LPTOUBlobStorage",
