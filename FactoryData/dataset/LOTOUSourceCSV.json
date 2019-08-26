@@ -19,27 +19,35 @@
 		},
 		"schema": [
 			{
+				"name": "MeterPoint Code",
 				"type": "String"
 			},
 			{
+				"name": "Serial Number",
 				"type": "String"
 			},
 			{
+				"name": "Plant Code",
 				"type": "String"
 			},
 			{
+				"name": "Date/Time",
 				"type": "String"
 			},
 			{
+				"name": "Data Type",
 				"type": "String"
 			},
 			{
+				"name": "Data Value",
 				"type": "String"
 			},
 			{
+				"name": "Units",
 				"type": "String"
 			},
 			{
+				"name": "Status",
 				"type": "String"
 			}
 		]
