@@ -12,13 +12,21 @@
 					"name": "TOUSource"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "LPTOUSinkTable",
+						"type": "DatasetReference"
+					},
+					"name": "TOUSink"
+				}
+			],
 			"transformations": [
 				{
 					"name": "TOUAggregate"
 				}
 			],
-			"script": "\n\nsource(output(\n\t\tMeterCode as string,\n\t\tSerial as string,\n\t\tPlantCode as string,\n\t\tDateTime as date 'dd/MM/yyyy',\n\t\tQuality as string,\n\t\tStream as string,\n\t\tDataType as string,\n\t\tEnergy as double '000,000,000.00',\n\t\tUnits as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['TOU*.csv']) ~> TOUSource\nTOUSource aggregate(groupBy(DateTime,\n\t\tMeterCode,\n\t\tDataType),\n\tMedianValue = round(mean(Energy))\r\n,\n\t\tMaximumValue = round(max({Energy})),\n\t\tMinimumValue = round(min({Energy}))) ~> TOUAggregate"
+			"script": "\n\nsource(output(\n\t\tMeterCode as string,\n\t\tSerial as string,\n\t\tPlantCode as string,\n\t\tDateTime as date 'dd/MM/yyyy',\n\t\tQuality as string,\n\t\tStream as string,\n\t\tDataType as string,\n\t\tEnergy as double '000,000,000.00',\n\t\tUnits as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['TOU*.csv']) ~> TOUSource\nTOUSource aggregate(groupBy(DateTime,\n\t\tMeterCode,\n\t\tDataType),\n\tMedianValue = round(mean(Energy))\r\n,\n\t\tMaximumValue = round(max({Energy})),\n\t\tMinimumValue = round(min({Energy}))) ~> TOUAggregate\nTOUAggregate sink(input(\n\t\tId as integer,\n\t\tDate as date,\n\t\tMeterCode as string,\n\t\tDataType as string,\n\t\tAverageValue as double,\n\t\tMinimumValue as double,\n\t\tMaximumValue as double,\n\t\tMedianValue as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDate = DateTime,\n\t\tMeterCode,\n\t\tDataType,\n\t\tMinimumValue,\n\t\tMaximumValue,\n\t\tMedianValue\n\t)) ~> TOUSink"
 		}
 	}
 }
