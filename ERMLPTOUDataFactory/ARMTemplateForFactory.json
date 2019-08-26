@@ -25,6 +25,44 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/LPPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LPDataFlow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "LPDataFlow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"LPSource": {},
+									"LPSink": {}
+								}
+							},
+							"staging": {}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/LPDataFlow')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/LPTOUPipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -74,13 +112,13 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/LPPipeline')]",
+			"name": "[concat(parameters('factoryName'), '/TOUPipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "LPDataFlow",
+						"name": "TOUDataFlow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -93,12 +131,12 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "LPDataFlow",
+								"referenceName": "TOUDataFlow",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"LPSource": {},
-									"LPSink": {}
+									"TOUSource": {},
+									"TOUSink": {}
 								}
 							},
 							"staging": {}
@@ -108,60 +146,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/LPDataFlow')]"
+				"[concat(variables('factoryId'), '/dataflows/TOUDataFlow')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LPDataFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "LPSourceCSV",
-								"type": "DatasetReference"
-							},
-							"name": "LPSource",
-							"typeProperties": {}
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "LPTOUSinkTable",
-								"type": "DatasetReference"
-							},
-							"name": "LPSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "LPAggregate"
-						}
-					],
-					"script": "\n\nsource(output(\n\t\t{MeterPoint Code} as string,\n\t\t{Serial Number} as string,\n\t\t{Plant Code} as string,\n\t\t{Date/Time} as date 'dd/MM/yyyy',\n\t\t{Data Type} as string,\n\t\t{Data Value} as double '000,000,000.00',\n\t\tUnits as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['LP*.csv']) ~> LPSource\nLPSource aggregate(groupBy({Date/Time},\n\t\t{MeterPoint Code},\n\t\t{Data Type}),\n\tMedianValue = round(mean({Data Value}))\r\n,\n\t\tMaximumValue = round(max({Data Value})),\n\t\tMinimumValue = round(min({Data Value}))) ~> LPAggregate\nLPAggregate sink(input(\n\t\tId as integer,\n\t\tDate as date,\n\t\tMeterCode as string,\n\t\tDataType as string,\n\t\tAverageValue as double,\n\t\tMinimumValue as double,\n\t\tMaximumValue as double,\n\t\tMedianValue as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tMeterCode = {MeterPoint Code},\n\t\tDate = {Date/Time},\n\t\tDataType = {Data Type},\n\t\tMinimumValue,\n\t\tMaximumValue,\n\t\tMedianValue\n\t)) ~> LPSink"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/LPTOUSinkTable')]",
-				"[concat(variables('factoryId'), '/datasets/LPSourceCSV')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LPTOUBlobStorage')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('LPTOUBlobStorage_connectionString')]"
-				}
-			},
-			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LPSourceCSV')]",
@@ -224,19 +210,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/LPTOUSqlDB')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('LPTOUSqlDB_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/LPTOUSinkTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -293,83 +266,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LPTOUSqlDB')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/TOUPipeline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "TOUDataFlow",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "TOUDataFlow",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"TOUSource": {},
-									"TOUSink": {}
-								}
-							},
-							"staging": {}
-						}
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/TOUDataFlow')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/TOUDataFlow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "TOUSourceCSV",
-								"type": "DatasetReference"
-							},
-							"name": "TOUSource",
-							"typeProperties": {}
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "LPTOUSinkTable",
-								"type": "DatasetReference"
-							},
-							"name": "TOUSink"
-						}
-					],
-					"transformations": [
-						{
-							"name": "TOUAggregate"
-						}
-					],
-					"script": "\n\nsource(output(\n\t\tMeterCode as string,\n\t\tSerial as string,\n\t\tPlantCode as string,\n\t\tDateTime as date 'dd/MM/yyyy',\n\t\tQuality as string,\n\t\tStream as string,\n\t\tDataType as string,\n\t\tEnergy as double '000,000,000.00',\n\t\tUnits as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['TOU*.csv']) ~> TOUSource\nTOUSource aggregate(groupBy(DateTime,\n\t\tMeterCode,\n\t\tDataType),\n\tMedianValue = round(mean(Energy))\r\n,\n\t\tMaximumValue = round(max({Energy})),\n\t\tMinimumValue = round(min({Energy}))) ~> TOUAggregate\nTOUAggregate sink(input(\n\t\tId as integer,\n\t\tDate as date,\n\t\tMeterCode as string,\n\t\tDataType as string,\n\t\tAverageValue as double,\n\t\tMinimumValue as double,\n\t\tMaximumValue as double,\n\t\tMedianValue as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDate = DateTime,\n\t\tMeterCode,\n\t\tDataType,\n\t\tMinimumValue,\n\t\tMaximumValue,\n\t\tMedianValue\n\t)) ~> TOUSink"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/LPTOUSinkTable')]",
-				"[concat(variables('factoryId'), '/datasets/TOUSourceCSV')]"
 			]
 		},
 		{
@@ -437,6 +333,32 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/LPTOUBlobStorage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('LPTOUBlobStorage_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LPTOUSqlDB')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('LPTOUSqlDB_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/TriggerLPTOU')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
@@ -465,6 +387,84 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/LPTOUPipeline')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LPDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "LPSourceCSV",
+								"type": "DatasetReference"
+							},
+							"name": "LPSource",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "LPTOUSinkTable",
+								"type": "DatasetReference"
+							},
+							"name": "LPSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "LPAggregate"
+						}
+					],
+					"script": "\n\nsource(output(\n\t\t{MeterPoint Code} as string,\n\t\t{Serial Number} as string,\n\t\t{Plant Code} as string,\n\t\t{Date/Time} as date 'dd/MM/yyyy',\n\t\t{Data Type} as string,\n\t\t{Data Value} as double '000,000,000.00',\n\t\tUnits as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['LP*.csv']) ~> LPSource\nLPSource aggregate(groupBy({Date/Time},\n\t\t{MeterPoint Code},\n\t\t{Data Type}),\n\tMedianValue = round(mean({Data Value})),\n\t\tMaximumValue = round(max({Data Value})),\n\t\tMinimumValue = round(min({Data Value}))) ~> LPAggregate\nLPAggregate sink(input(\n\t\tId as integer,\n\t\tDate as date,\n\t\tMeterCode as string,\n\t\tDataType as string,\n\t\tAverageValue as double,\n\t\tMinimumValue as double,\n\t\tMaximumValue as double,\n\t\tMedianValue as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tMeterCode = {MeterPoint Code},\n\t\tDate = {Date/Time},\n\t\tDataType = {Data Type},\n\t\tMinimumValue,\n\t\tMaximumValue,\n\t\tMedianValue\n\t)) ~> LPSink"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LPTOUSinkTable')]",
+				"[concat(variables('factoryId'), '/datasets/LPSourceCSV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TOUDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "TOUSourceCSV",
+								"type": "DatasetReference"
+							},
+							"name": "TOUSource",
+							"typeProperties": {}
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "LPTOUSinkTable",
+								"type": "DatasetReference"
+							},
+							"name": "TOUSink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "TOUAggregate"
+						}
+					],
+					"script": "\n\nsource(output(\n\t\tMeterCode as string,\n\t\tSerial as string,\n\t\tPlantCode as string,\n\t\tDateTime as date 'dd/MM/yyyy',\n\t\tQuality as string,\n\t\tStream as string,\n\t\tDataType as string,\n\t\tEnergy as double '000,000,000.00',\n\t\tUnits as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['TOU*.csv']) ~> TOUSource\nTOUSource aggregate(groupBy(DateTime,\n\t\tMeterCode,\n\t\tDataType),\n\tMedianValue = round(mean(Energy)),\n\t\tMaximumValue = round(max({Energy})),\n\t\tMinimumValue = round(min({Energy}))) ~> TOUAggregate\nTOUAggregate sink(input(\n\t\tId as integer,\n\t\tDate as date,\n\t\tMeterCode as string,\n\t\tDataType as string,\n\t\tAverageValue as double,\n\t\tMinimumValue as double,\n\t\tMaximumValue as double,\n\t\tMedianValue as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'table',\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tmapColumn(\n\t\tDate = DateTime,\n\t\tMeterCode,\n\t\tDataType,\n\t\tMinimumValue,\n\t\tMaximumValue,\n\t\tMedianValue\n\t)) ~> TOUSink"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/LPTOUSinkTable')]",
+				"[concat(variables('factoryId'), '/datasets/TOUSourceCSV')]"
 			]
 		}
 	]
