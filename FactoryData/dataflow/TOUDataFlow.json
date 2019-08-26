@@ -18,7 +18,7 @@
 					"name": "TOUAggregate"
 				}
 			],
-			"script": "\n\nsource(output(\n\t\tMeterCode as string,\n\t\tSerial as string,\n\t\tPlantCode as string,\n\t\tDateTime as string,\n\t\tQuality as string,\n\t\tStream as string,\n\t\tDataType as string,\n\t\tEnergy as string,\n\t\tUnits as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['TOU*.csv']) ~> TOUSource\nTOUSource aggregate() ~> TOUAggregate"
+			"script": "\n\nsource(output(\n\t\tMeterCode as string,\n\t\tSerial as string,\n\t\tPlantCode as string,\n\t\tDateTime as date 'dd/MM/yyyy',\n\t\tQuality as string,\n\t\tStream as string,\n\t\tDataType as string,\n\t\tEnergy as double '000,000,000.00',\n\t\tUnits as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['TOU*.csv']) ~> TOUSource\nTOUSource aggregate(groupBy(DateTime,\n\t\tMeterCode,\n\t\tDataType),\n\tMedianValue = round(mean(Energy))\r\n,\n\t\tMaximumValue = round(max({Energy})),\n\t\tMinimumValue = round(min({Energy}))) ~> TOUAggregate"
 		}
 	}
 }
