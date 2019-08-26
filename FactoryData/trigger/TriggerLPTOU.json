@@ -1,0 +1,25 @@
+{
+	"name": "TriggerLPTOU",
+	"properties": {
+		"description": "As soon as the blob created, the pipeline will be processed.",
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "LPTOUPipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/lptoublobsourcecontainer/blobs/",
+			"blobPathEndsWith": "*.csv",
+			"scope": "/subscriptions/93493f2e-498c-4356-bbe8-2282407a6e98/resourceGroups/ERM/providers/Microsoft.Storage/storageAccounts/ermlptoustorage",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
