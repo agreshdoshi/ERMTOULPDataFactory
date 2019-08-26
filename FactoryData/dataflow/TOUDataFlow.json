@@ -3,10 +3,18 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "TOUSourceCSV",
+						"type": "DatasetReference"
+					},
+					"name": "TOUSource"
+				}
+			],
 			"sinks": [],
 			"transformations": [],
-			"script": "\n"
+			"script": "\n\nsource(output(\n\t\t{MeterPoint Code} as string,\n\t\t{Serial Number} as string,\n\t\t{Plant Code} as string,\n\t\t{Date/Time} as string,\n\t\t{Data Type} as string,\n\t\t{Data Value} as string,\n\t\tUnits as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true) ~> TOUSource"
 		}
 	}
 }
