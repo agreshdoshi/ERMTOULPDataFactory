@@ -1,6 +1,21 @@
 {
 	"name": "LPTOUPipeline",
 	"properties": {
+		"activities": [
+			{
+				"name": "ExecuteLVPipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "LPPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
 		"annotations": []
 	}
 }

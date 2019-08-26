@@ -1,0 +1,12 @@
+{
+	"name": "LPDataFlow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"script": "\n"
+		}
+	}
+}
