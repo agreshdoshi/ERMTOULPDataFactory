@@ -18,7 +18,7 @@
 					"name": "LPAggregate"
 				}
 			],
-			"script": "\n\nsource(output(\n\t\t{MeterPoint Code} as string,\n\t\t{Serial Number} as string,\n\t\t{Plant Code} as string,\n\t\t{Date/Time} as date 'dd/MM/yyyy',\n\t\t{Data Type} as string,\n\t\t{Data Value} as double '000,000,000.00',\n\t\tUnits as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\twildcardPaths:['LP*.csv']) ~> LPSource\nLPSource aggregate() ~> LPAggregate"
+			"script": "\n\nsource(output(\n\t\t{MeterPoint Code} as string,\n\t\t{Serial Number} as string,\n\t\t{Plant Code} as string,\n\t\t{Date/Time} as date 'dd/MM/yyyy',\n\t\t{Data Type} as string,\n\t\t{Data Value} as double '000,000,000.00',\n\t\tUnits as string,\n\t\tStatus as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpurgeFiles: true,\n\tinferDriftedColumnTypes: true,\n\twildcardPaths:['LP*.csv']) ~> LPSource\nLPSource aggregate() ~> LPAggregate"
 		}
 	}
 }
