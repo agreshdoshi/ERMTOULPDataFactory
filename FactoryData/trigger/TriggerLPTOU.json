@@ -15,7 +15,7 @@
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
 			"blobPathBeginsWith": "/lptoublobsourcecontainer/blobs/",
-			"blobPathEndsWith": "*.csv",
+			"blobPathEndsWith": ".csv",
 			"scope": "/subscriptions/93493f2e-498c-4356-bbe8-2282407a6e98/resourceGroups/ERM/providers/Microsoft.Storage/storageAccounts/ermlptoustorage",
 			"events": [
 				"Microsoft.Storage.BlobCreated"
