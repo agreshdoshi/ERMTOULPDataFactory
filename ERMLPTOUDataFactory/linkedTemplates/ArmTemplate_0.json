@@ -456,7 +456,7 @@
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
 					"blobPathBeginsWith": "/lptoublobsourcecontainer/blobs/",
-					"blobPathEndsWith": "*.csv",
+					"blobPathEndsWith": ".csv",
 					"scope": "[parameters('TriggerLPTOU_properties_typeProperties_scope')]",
 					"events": [
 						"Microsoft.Storage.BlobCreated"
